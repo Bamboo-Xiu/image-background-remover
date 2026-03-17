@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image Background Remover — 一键去背景</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .checkerboard {
+      background-image:
+        linear-gradient(45deg, #ccc 25%, transparent 25%),
+        linear-gradient(-45deg, #ccc 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #ccc 75%),
+        linear-gradient(-45deg, transparent 75%, #ccc 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    }
+    .drop-active { border-color: #6366f1 !important; background-color: #eef2ff; }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-800">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center gap-3">
+    <span class="text-2xl">✂️</span>
+    <div>
+      <h1 class="text-lg font-bold leading-tight">Image Background Remover</h1>
+      <p class="text-xs text-gray-500">一键去除图片背景 · 图片不上传服务器存储</p>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-10">
+
+    <!-- Upload Zone -->
+    <div id="dropZone"
+      class="border-2 border-dashed border-gray-300 rounded-2xl p-12 text-center cursor-pointer hover:border-indigo-400 transition-colors"
+      onclick="document.getElementById('fileInput').click()">
+      <div class="text-5xl mb-4">🖼️</div>
+      <p class="text-lg font-medium text-gray-600">拖拽图片到这里，或点击上传</p>
+      <p class="text-sm text-gray-400 mt-2">支持 JPG / PNG / WebP · 最大 10MB</p>
+      <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" class="hidden" />
+    </div>
+
+    <!-- Preview Area (hidden until image selected) -->
+    <div id="previewArea" class="hidden mt-10">
+
+      <!-- Background toggle -->
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-sm text-gray-500">预览背景：</span>
+        <button onclick="setBg('checker')" id="btn-checker" class="px-3 py-1 text-xs rounded-full bg-indigo-100 text-indigo-700 font-medium">棋盘格</button>
+        <button onclick="setBg('white')" id="btn-white" class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600">纯白</button>
+        <button onclick="setBg('black')" id="btn-black" class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600">纯黑</button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Original -->
+        <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+          <div class="px-4 py-2 border-b border-gray-100 text-xs text-gray-500 font-medium">原图</div>
+          <div class="p-4 flex items-center justify-center min-h-48">
+            <img id="originalImg" class="max-w-full max-h-72 object-contain rounded" />
+          </div>
+        </div>
+
+        <!-- Result -->
+        <div class="rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+          <div class="bg-white px-4 py-2 border-b border-gray-100 text-xs text-gray-500 font-medium">去背景后</div>
+          <div id="resultBg" class="checkerboard p-4 flex items-center justify-center min-h-48">
+            <div id="resultPlaceholder" class="text-center text-gray-400">
+              <div class="text-3xl mb-2">✨</div>
+              <p class="text-sm">点击下方按钮处理</p>
+            </div>
+            <img id="resultImg" class="hidden max-w-full max-h-72 object-contain rounded" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="mt-6 flex flex-col sm:flex-row items-center gap-4 justify-center">
+        <button id="processBtn"
+          onclick="processImage()"
+          class="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-colors flex items-center gap-2">
+          <span id="btnIcon">✂️</span>
+          <span id="btnText">去背景</span>
+        </button>
+        <button id="downloadBtn"
+          onclick="downloadResult()"
+          class="hidden px-8 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-colors flex items-center gap-2">
+          ⬇️ 下载 PNG
+        </button>
+        <button onclick="reset()" class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl font-medium transition-colors">
+          重新上传
+        </button>
+      </div>
+
+      <!-- Error -->
+      <div id="errorMsg" class="hidden mt-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm text-center"></div>
+    </div>
+
+  </main>
+
+  <footer class="text-center text-xs text-gray-400 py-8">
+    Powered by <a href="https://www.remove.bg" target="_blank" class="underline">Remove.bg</a> · 图片仅用于处理，不做存储
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
