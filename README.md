@@ -1,79 +1,36 @@
-# Image Background Remover
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-一键去除图片背景，基于 Remove.bg API，部署在 Cloudflare Pages + Workers。
+## Getting Started
 
-## 特性
-
-- 🚀 一键去背景，秒级返回结果
-- 🔒 API Key 保存在 Cloudflare Workers 环境变量，不暴露给前端
-- 🗑️ 图片不存储，处理完即丢弃
-- 📱 移动端友好
-- 💸 Cloudflare 免费部署（Workers 10万次/天免费）
-
-## 技术栈
-
-- **前端**：纯静态 HTML + Tailwind CSS（CDN）
-- **后端**：Cloudflare Workers（API 代理）
-- **AI 服务**：[Remove.bg API](https://www.remove.bg/api)
-- **部署**：Cloudflare Pages + Workers
-
-## 本地开发
+First, run the development server:
 
 ```bash
-# 安装 Wrangler CLI
-npm install -g wrangler
-
-# 登录 Cloudflare
-wrangler login
-
-# 设置 Remove.bg API Key
-wrangler secret put REMOVE_BG_API_KEY
-
-# 本地预览
-wrangler pages dev public --compatibility-date=2024-01-01
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-## 部署到 Cloudflare
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-### 方式一：Cloudflare Pages（推荐）
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-1. Fork 本仓库
-2. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com)
-3. 进入 **Pages** → **Create a project** → 连接 GitHub 仓库
-4. 构建设置：
-   - Framework preset: `None`
-   - Build command: _(留空)_
-   - Build output directory: `public`
-5. 添加环境变量：`REMOVE_BG_API_KEY` = 你的 API Key
-6. 部署完成后，在 **Functions** 中确认 `/api/*` 路由绑定到 Worker
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-### 方式二：Wrangler CLI
+## Learn More
 
-```bash
-wrangler secret put REMOVE_BG_API_KEY
-wrangler deploy
-```
+To learn more about Next.js, take a look at the following resources:
 
-## 获取 Remove.bg API Key
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-1. 注册 [Remove.bg](https://www.remove.bg/users/sign_up)
-2. 进入 [API Keys](https://www.remove.bg/api#remove-background) 页面
-3. 复制 API Key
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-免费额度：50次/月。超出后按 $0.2/次 计费。
+## Deploy on Vercel
 
-## 项目结构
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-```
-├── public/
-│   ├── index.html    # 前端页面
-│   └── app.js        # 交互逻辑
-├── workers/
-│   └── remove-bg.js  # Cloudflare Workers 代理
-├── wrangler.toml     # Workers 配置
-└── README.md
-```
-
-## License
-
-MIT
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
