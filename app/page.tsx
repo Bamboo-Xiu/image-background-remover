@@ -80,7 +80,7 @@ export default function Home() {
     removeBg(file)
   }, [removeBg])
 
-  const onDrop = useCallback((e: DragEvent<HTMLDivElement>) => {
+  const onDrop = useCallback((e: DragEvent<HTMLLabelElement>) => {
     e.preventDefault()
     setIsDragging(false)
     const file = e.dataTransfer.files[0]
