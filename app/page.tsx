@@ -49,11 +49,11 @@ export default function Home() {
       const res = await fetch('/api/remove-bg', { method: 'POST', body: form, signal: controller.signal }).finally(() => clearTimeout(timer))
       if (!res.ok) {
         let errorMsg = '处理失败'
+        const text = await res.text()
         try {
-          const data = await res.json()
+          const data = JSON.parse(text)
           errorMsg = data.error || errorMsg
         } catch {
-          const text = await res.text()
           errorMsg = text || `服务器错误 (${res.status})`
         }
         throw new Error(errorMsg)
