@@ -1,17 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getRequestContext } from '@cloudflare/next-on-pages'
+import { getOptionalRequestContext } from '@cloudflare/next-on-pages'
 
 export const runtime = 'edge'
 
 export async function POST(req: NextRequest) {
   try {
-    // Cloudflare Pages 环境变量通过 getRequestContext 获取
-    // 本地开发时会回退到 process.env
+    // 获取 API Key - 使用 getOptionalRequestContext 更安全
     let apiKey: string | undefined
-    try {
-      apiKey = getRequestContext().env.REMOVE_BG_API_KEY
-    } catch {
-      // 本地开发环境，使用 process.env
+
+    const ctx = getOptionalRequestContext()
+    if (ctx?.env?.REMOVE_BG_API_KEY) {
+      apiKey = ctx.env.REMOVE_BG_API_KEY
+    }
+
+    // 如果 Cloudflare 环境没有，尝试 process.env（本地开发）
+    if (!apiKey) {
       apiKey = process.env.REMOVE_BG_API_KEY
     }
 
