@@ -1,22 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getOptionalRequestContext } from '@cloudflare/next-on-pages'
 
 export const runtime = 'edge'
 
 export async function POST(req: NextRequest) {
   try {
-    // 获取 API Key - 使用 getOptionalRequestContext 更安全
-    let apiKey: string | undefined
-
-    const ctx = getOptionalRequestContext()
-    if (ctx?.env?.REMOVE_BG_API_KEY) {
-      apiKey = ctx.env.REMOVE_BG_API_KEY
-    }
-
-    // 如果 Cloudflare 环境没有，尝试 process.env（本地开发）
-    if (!apiKey) {
-      apiKey = process.env.REMOVE_BG_API_KEY
-    }
+    // 由于启用了 nodejs_compat，直接使用 process.env
+    const apiKey = process.env.REMOVE_BG_API_KEY
 
     if (!apiKey) {
       return NextResponse.json({ error: 'API key not configured', code: 'API_ERROR' }, { status: 500 })
