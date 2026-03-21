@@ -1,27 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getRequestContext } from '@cloudflare/next-on-pages'
 
 export const runtime = 'edge'
 
-// 动态导入 getRequestContext，避免构建时错误
-async function getApiKey(): Promise<string | undefined> {
-  // 尝试从 Cloudflare 环境获取
-  try {
-    const { getRequestContext } = await import('@cloudflare/next-on-pages')
-    const ctx = getRequestContext()
-    if (ctx?.env?.REMOVE_BG_API_KEY) {
-      return ctx.env.REMOVE_BG_API_KEY
-    }
-  } catch {
-    // 忽略错误，尝试其他方式
-  }
-
-  // 尝试从 process.env 获取（本地开发或其他部署环境）
-  return process.env.REMOVE_BG_API_KEY
-}
-
 export async function POST(req: NextRequest) {
   try {
-    const apiKey = await getApiKey()
+    // Cloudflare Pages 环境变量通过 getRequestContext 获取
+    // 本地开发时会回退到 process.env
+    let apiKey: string | undefined
+    try {
+      apiKey = getRequestContext().env.REMOVE_BG_API_KEY
+    } catch {
+      // 本地开发环境，使用 process.env
+      apiKey = process.env.REMOVE_BG_API_KEY
+    }
+
     if (!apiKey) {
       return NextResponse.json({ error: 'API key not configured', code: 'API_ERROR' }, { status: 500 })
     }
