@@ -48,8 +48,15 @@ export default function Home() {
       const timer = setTimeout(() => controller.abort(), 90000)
       const res = await fetch('/api/remove-bg', { method: 'POST', body: form, signal: controller.signal }).finally(() => clearTimeout(timer))
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || '处理失败')
+        let errorMsg = '处理失败'
+        try {
+          const data = await res.json()
+          errorMsg = data.error || errorMsg
+        } catch {
+          const text = await res.text()
+          errorMsg = text || `服务器错误 (${res.status})`
+        }
+        throw new Error(errorMsg)
       }
       const blob = await res.blob()
       setResultUrl(URL.createObjectURL(blob))

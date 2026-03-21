@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getRequestContext } from '@cloudflare/next-on-pages'
 
 export const runtime = 'edge'
 
 export async function POST(req: NextRequest) {
-  const apiKey = process.env.REMOVE_BG_API_KEY
+  // Cloudflare Pages 环境变量通过 getRequestContext 获取
+  const env = getRequestContext().env
+  const apiKey = env.REMOVE_BG_API_KEY
   if (!apiKey) {
     return NextResponse.json({ error: 'API key not configured', code: 'API_ERROR' }, { status: 500 })
   }
