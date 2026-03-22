@@ -3,5 +3,5 @@ compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
 
-[vars]
-REMOVE_BG_API_KEY = "JdyQ5NZ3j1vDUV5DYHgpZRHi"
+# API key 应在 Cloudflare Dashboard 的 Settings > Environment variables 中设置
+# 不要在代码仓库中硬编码 API key
