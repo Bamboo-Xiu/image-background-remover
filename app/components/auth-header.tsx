@@ -1,7 +1,13 @@
 import { auth, signIn, signOut } from "@/auth"
 
 export async function AuthHeader() {
-  const session = await auth()
+  let session = null
+  try {
+    session = await auth()
+  } catch {
+    // Auth not configured or failed - render without login
+    return <div />
+  }
 
   return (
     <div className="flex items-center gap-4">
