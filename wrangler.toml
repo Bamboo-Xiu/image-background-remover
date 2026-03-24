@@ -3,5 +3,10 @@ compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat_v2"]
 pages_build_output_dir = ".vercel/output/static"
 
+[[d1_databases]]
+binding = "DB"
+database_name = "image-bg-remover-db"
+database_id = "31cb9b40-1e01-4ae8-a543-07f65969d254"
+
 # API key 应在 Cloudflare Dashboard 的 Settings > Environment variables 中设置
 # 不要在代码仓库中硬编码 API key
