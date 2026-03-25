@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect, DragEvent, ChangeEvent, ReactNode } from 'react'
+import { useSession } from 'next-auth/react'
+import { AuthHeader } from './components/auth-header-client'
 
 type Status = 'idle' | 'processing' | 'done' | 'error'
 type BgMode = 'checkerboard' | 'white' | 'black'
@@ -8,7 +10,8 @@ type BgMode = 'checkerboard' | 'white' | 'black'
 const MAX_SIZE = 10 * 1024 * 1024
 const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp']
 
-export default function HomeClient({ authHeader }: { authHeader: ReactNode }) {
+export default function HomeClient() {
+  const { data: session } = useSession()
   const [status, setStatus] = useState<Status>('idle')
   const [originalFile, setOriginalFile] = useState<File | null>(null)
   const [originalUrl, setOriginalUrl] = useState<string>('')
@@ -150,7 +153,7 @@ export default function HomeClient({ authHeader }: { authHeader: ReactNode }) {
               <p className="text-sm text-gray-500">一键去除图片背景，免费、快速</p>
             </div>
           </div>
-          {authHeader}
+          <AuthHeader session={session} />
         </div>
       </header>
 
