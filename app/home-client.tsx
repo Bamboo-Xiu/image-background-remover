@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect, DragEvent, ChangeEvent } from 'react'
+import { SessionProvider } from 'next-auth/react'
 import { AuthHeader } from './components/auth-header-client'
 
 type Status = 'idle' | 'processing' | 'done' | 'error'
@@ -9,7 +10,7 @@ type BgMode = 'checkerboard' | 'white' | 'black'
 const MAX_SIZE = 10 * 1024 * 1024
 const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp']
 
-export default function HomeClient() {
+function HomeContent() {
   const [status, setStatus] = useState<Status>('idle')
   const [originalFile, setOriginalFile] = useState<File | null>(null)
   const [originalUrl, setOriginalUrl] = useState<string>('')
@@ -251,5 +252,13 @@ export default function HomeClient() {
         &nbsp;·&nbsp;图片仅在内存中处理，不会被存储
       </footer>
     </div>
+  )
+}
+
+export default function HomeClient() {
+  return (
+    <SessionProvider>
+      <HomeContent />
+    </SessionProvider>
   )
 }
