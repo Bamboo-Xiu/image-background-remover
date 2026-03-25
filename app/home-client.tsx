@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect, DragEvent, ChangeEvent, ReactNode } from 'react'
-import { useSession } from 'next-auth/react'
+import { useState, useRef, useCallback, useEffect, DragEvent, ChangeEvent } from 'react'
 import { AuthHeader } from './components/auth-header-client'
 
 type Status = 'idle' | 'processing' | 'done' | 'error'
@@ -11,7 +10,6 @@ const MAX_SIZE = 10 * 1024 * 1024
 const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp']
 
 export default function HomeClient() {
-  const { data: session } = useSession()
   const [status, setStatus] = useState<Status>('idle')
   const [originalFile, setOriginalFile] = useState<File | null>(null)
   const [originalUrl, setOriginalUrl] = useState<string>('')
@@ -29,7 +27,6 @@ export default function HomeClient() {
   }, [status])
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Auto-dismiss toast (info stays until replaced)
   useEffect(() => {
     if (!toast || toast.type === 'info') return
     const t = setTimeout(() => setToast(null), 4000)
@@ -86,7 +83,6 @@ export default function HomeClient() {
     setOriginalUrl(URL.createObjectURL(file))
     setResultUrl('')
     setErrorMsg('')
-    // 选完图片自动开始处理
     removeBg(file)
   }, [removeBg])
 
@@ -133,7 +129,6 @@ export default function HomeClient() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Toast */}
       {toast && (
         <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-xl text-white text-sm font-medium shadow-lg transition-all ${toastColor[toast.type]}`}>
           {toast.type === 'success' && '✅ '}
@@ -143,7 +138,6 @@ export default function HomeClient() {
         </div>
       )}
 
-      {/* Header */}
       <header className="bg-white border-b border-gray-200 py-4 px-6">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -153,12 +147,11 @@ export default function HomeClient() {
               <p className="text-sm text-gray-500">一键去除图片背景，免费、快速</p>
             </div>
           </div>
-          <AuthHeader session={session} />
+          <AuthHeader />
         </div>
       </header>
 
       <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-8 flex flex-col gap-8">
-        {/* Upload Area */}
         {status === 'idle' && (
           <label
             className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-colors block ${
@@ -175,11 +168,9 @@ export default function HomeClient() {
           </label>
         )}
 
-        {/* Processing / Done / Error */}
         {status !== 'idle' && (
           <div className="flex flex-col gap-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Original */}
               <div className="flex flex-col gap-2">
                 <p className="text-sm font-medium text-gray-500 text-center">原图</p>
                 <div className="rounded-xl overflow-hidden border border-gray-200 bg-gray-100 aspect-square flex items-center justify-center">
@@ -187,7 +178,6 @@ export default function HomeClient() {
                 </div>
               </div>
 
-              {/* Result */}
               <div className="flex flex-col gap-2">
                 <p className="text-sm font-medium text-gray-500 text-center">去背景后</p>
                 <div className={`rounded-xl overflow-hidden border border-gray-200 aspect-square flex items-center justify-center ${status === 'done' ? bgClass[bgMode] : 'bg-gray-100'}`}>
@@ -211,7 +201,6 @@ export default function HomeClient() {
               </div>
             </div>
 
-            {/* Background toggle */}
             {status === 'done' && (
               <div className="flex items-center justify-center gap-2">
                 <span className="text-sm text-gray-500">预览背景：</span>
@@ -229,7 +218,6 @@ export default function HomeClient() {
               </div>
             )}
 
-            {/* Action buttons */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               {status === 'done' && (
                 <>
