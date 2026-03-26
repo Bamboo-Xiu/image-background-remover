@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect, DragEvent, ChangeEvent } from 'react'
-import { SessionProvider } from 'next-auth/react'
+import { SessionProvider, useSession, signIn } from 'next-auth/react'
 import { AuthHeader } from './components/auth-header-client'
 
 type Status = 'idle' | 'processing' | 'done' | 'error'
@@ -11,7 +11,8 @@ const MAX_SIZE = 10 * 1024 * 1024
 const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp']
 
 function HomeContent() {
-  const [status, setStatus] = useState<Status>('idle')
+  const { data: session } = useSession()
+  const [statusState, setStatusState] = useState<Status>('idle')
   const [originalFile, setOriginalFile] = useState<File | null>(null)
   const [originalUrl, setOriginalUrl] = useState<string>('')
   const [resultUrl, setResultUrl] = useState<string>('')
@@ -22,10 +23,10 @@ function HomeContent() {
   const [elapsed, setElapsed] = useState(0)
 
   useEffect(() => {
-    if (status !== 'processing') { setElapsed(0); return }
+    if (statusState !== 'processing') { setElapsed(0); return }
     const t = setInterval(() => setElapsed(s => s + 1), 1000)
     return () => clearInterval(t)
-  }, [status])
+  }, [statusState])
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -39,7 +40,7 @@ function HomeContent() {
   }
 
   const removeBg = useCallback(async (file: File) => {
-    setStatus('processing')
+    setStatusState('processing')
     setErrorMsg('')
     showToast('info', '正在处理，请稍候...')
     try {
@@ -61,17 +62,23 @@ function HomeContent() {
       }
       const blob = await res.blob()
       setResultUrl(URL.createObjectURL(blob))
-      setStatus('done')
+      setStatusState('done')
       showToast('success', '背景去除成功！')
     } catch (err) {
       const msg = err instanceof Error ? err.message : '处理失败，请重试'
       setErrorMsg(msg)
-      setStatus('error')
+      setStatusState('error')
       showToast('error', msg)
     }
   }, [])
 
   const handleFile = useCallback((file: File) => {
+    // 检查登录状态
+    if (!session) {
+      showToast('error', '请先登录后再使用背景去除功能')
+      setTimeout(() => signIn('google'), 1500)
+      return
+    }
     if (!ACCEPTED.includes(file.type)) {
       showToast('error', '仅支持 JPG、PNG、WebP 格式')
       return
@@ -85,7 +92,7 @@ function HomeContent() {
     setResultUrl('')
     setErrorMsg('')
     removeBg(file)
-  }, [removeBg])
+  }, [removeBg, session])
 
   const onDrop = useCallback((e: DragEvent<HTMLLabelElement>) => {
     e.preventDefault()
@@ -108,7 +115,7 @@ function HomeContent() {
   }
 
   const reset = () => {
-    setStatus('idle')
+    setStatusState('idle')
     setOriginalFile(null)
     setOriginalUrl('')
     setResultUrl('')
@@ -153,7 +160,7 @@ function HomeContent() {
       </header>
 
       <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-8 flex flex-col gap-8">
-        {status === 'idle' && (
+        {statusState === 'idle' && (
           <label
             className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-colors block ${
               isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-blue-400 hover:bg-gray-100'
@@ -169,7 +176,7 @@ function HomeContent() {
           </label>
         )}
 
-        {status !== 'idle' && (
+        {statusState !== 'idle' && (
           <div className="flex flex-col gap-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
@@ -181,28 +188,28 @@ function HomeContent() {
 
               <div className="flex flex-col gap-2">
                 <p className="text-sm font-medium text-gray-500 text-center">去背景后</p>
-                <div className={`rounded-xl overflow-hidden border border-gray-200 aspect-square flex items-center justify-center ${status === 'done' ? bgClass[bgMode] : 'bg-gray-100'}`}>
-                  {status === 'processing' && (
+                <div className={`rounded-xl overflow-hidden border border-gray-200 aspect-square flex items-center justify-center ${statusState === 'done' ? bgClass[bgMode] : 'bg-gray-100'}`}>
+                  {statusState === 'processing' && (
                     <div className="flex flex-col items-center gap-3">
                       <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
                       <p className="text-sm text-gray-500">AI 处理中...</p>
                       <p className="text-xs text-gray-400">{elapsed}s（通常需要 30-60 秒）</p>
                     </div>
                   )}
-                  {status === 'error' && (
+                  {statusState === 'error' && (
                     <div className="flex flex-col items-center gap-2 px-4 text-center">
                       <span className="text-4xl">❌</span>
                       <p className="text-sm text-red-500 font-medium">{errorMsg}</p>
                     </div>
                   )}
-                  {status === 'done' && resultUrl && (
+                  {statusState === 'done' && resultUrl && (
                     <img src={resultUrl} alt="去背景后" className="max-w-full max-h-full object-contain" />
                   )}
                 </div>
               </div>
             </div>
 
-            {status === 'done' && (
+            {statusState === 'done' && (
               <div className="flex items-center justify-center gap-2">
                 <span className="text-sm text-gray-500">预览背景：</span>
                 {(['checkerboard', 'white', 'black'] as BgMode[]).map((mode) => (
@@ -220,7 +227,7 @@ function HomeContent() {
             )}
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              {status === 'done' && (
+              {statusState === 'done' && (
                 <>
                   <button
                     onClick={handleDownload}

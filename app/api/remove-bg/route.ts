@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getToken } from 'next-auth/jwt'
 
 export const runtime = 'edge'
 
 export async function POST(req: NextRequest) {
   try {
+    // 验证用户登录状态
+    const token = await getToken({ req })
+    if (!token) {
+      return NextResponse.json({ error: '请先登录后再使用此功能', code: 'UNAUTHORIZED' }, { status: 401 })
+    }
+
     // 由于启用了 nodejs_compat，直接使用 process.env
     const apiKey = process.env.REMOVE_BG_API_KEY
 
