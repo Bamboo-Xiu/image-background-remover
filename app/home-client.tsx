@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect, DragEvent, ChangeEvent } from 'react'
 import { SessionProvider, useSession, signIn } from 'next-auth/react'
+import Link from 'next/link'
 import { AuthHeader } from './components/auth-header-client'
 
 type Status = 'idle' | 'processing' | 'done' | 'error'
@@ -148,14 +149,18 @@ function HomeContent() {
 
       <header className="bg-white border-b border-gray-200 py-4 px-6">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3">
             <span className="text-2xl">✂️</span>
             <div>
               <h1 className="text-xl font-bold text-gray-900">Background Remover</h1>
-              <p className="text-sm text-gray-500">一键去除图片背景，免费、快速</p>
+              <p className="text-sm text-gray-500">一键去除图片背景，快速、专业</p>
             </div>
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/pricing" className="text-sm text-gray-600 hover:text-gray-900 hidden sm:block">定价</Link>
+            <Link href="/faq" className="text-sm text-gray-600 hover:text-gray-900 hidden sm:block">常见问题</Link>
+            <AuthHeader />
           </div>
-          <AuthHeader />
         </div>
       </header>
 
@@ -254,9 +259,16 @@ function HomeContent() {
         )}
       </main>
 
-      <footer className="border-t border-gray-200 py-4 px-6 text-center text-sm text-gray-400">
-        Powered by <a href="https://www.remove.bg" className="underline hover:text-gray-600" target="_blank" rel="noopener noreferrer">Remove.bg</a>
-        &nbsp;·&nbsp;图片仅在内存中处理，不会被存储
+      <footer className="border-t border-gray-200 py-6 px-6 text-center text-sm text-gray-400">
+        <div className="flex flex-wrap justify-center gap-4 mb-2">
+          <Link href="/pricing" className="hover:text-gray-600">定价方案</Link>
+          <Link href="/faq" className="hover:text-gray-600">常见问题</Link>
+          <a href="mailto:support@example.com" className="hover:text-gray-600">联系我们</a>
+        </div>
+        <p>
+          Powered by <a href="https://www.remove.bg" className="underline hover:text-gray-600" target="_blank" rel="noopener noreferrer">Remove.bg</a>
+          &nbsp;·&nbsp;图片仅在内存中处理，不会被存储
+        </p>
       </footer>
     </div>
   )

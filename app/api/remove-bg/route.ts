@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
+import { getRequestContext } from '@cloudflare/next-on-pages'
+import { hasAvailableQuota, consumeQuota } from '@/lib/quota'
+import { createProcessHistory } from '@/lib/db-utils'
 
 export const runtime = 'edge'
 
@@ -9,6 +12,19 @@ export async function POST(req: NextRequest) {
     const token = await getToken({ req })
     if (!token) {
       return NextResponse.json({ error: '请先登录后再使用此功能', code: 'UNAUTHORIZED' }, { status: 401 })
+    }
+
+    const { env } = getRequestContext()
+    const db = env.DB
+    const userId = token.sub as string
+
+    // 检查配额
+    const hasQuota = await hasAvailableQuota(db, userId)
+    if (!hasQuota) {
+      return NextResponse.json(
+        { error: '您的配额已用完，请前往个人中心充值', code: 'QUOTA_EXCEEDED' },
+        { status: 402 }
+      )
     }
 
     // 由于启用了 nodejs_compat，直接使用 process.env
@@ -30,6 +46,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '未找到图片文件', code: 'INVALID_FORMAT' }, { status: 400 })
     }
 
+    const originalFilename = (imageFile as File).name || 'unknown.jpg'
+    const originalSize = imageFile.size
+
     const upstream = new FormData()
     upstream.append('image_file', imageFile)
     upstream.append('size', 'auto')
@@ -42,6 +61,9 @@ export async function POST(req: NextRequest) {
 
     if (!res.ok) {
       const text = await res.text()
+      // 记录失败历史
+      await createProcessHistory(db, userId, 'free', originalFilename, originalSize, null, 'failed', text)
+
       if (res.status === 402) {
         return NextResponse.json({ error: '免费额度已用完', code: 'QUOTA_EXCEEDED' }, { status: 402 })
       }
@@ -52,6 +74,22 @@ export async function POST(req: NextRequest) {
     }
 
     const buffer = await res.arrayBuffer()
+    const processedSize = buffer.byteLength
+
+    // 消耗配额
+    const consumeResult = await consumeQuota(db, userId)
+
+    // 记录成功历史
+    await createProcessHistory(
+      db,
+      userId,
+      consumeResult.quotaType || 'free',
+      originalFilename,
+      originalSize,
+      processedSize,
+      'success'
+    )
+
     return new NextResponse(buffer, {
       status: 200,
       headers: { 'Content-Type': 'image/png' },
