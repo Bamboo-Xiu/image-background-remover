@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getToken } from 'next-auth/jwt'
+import { auth } from '@/auth'
 import { getRequestContext } from '@cloudflare/next-on-pages'
 import { getUserStats } from '@/lib/db-utils'
 
@@ -7,8 +7,8 @@ export const runtime = 'edge'
 
 export async function GET(req: NextRequest) {
   try {
-    const token = await getToken({ req })
-    if (!token) {
+    const session = await auth()
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: '请先登录', code: 'UNAUTHORIZED' },
         { status: 401 }
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 
     const { env } = getRequestContext()
     const db = env.DB
-    const userId = token.sub as string
+    const userId = session.user.id
 
     const stats = await getUserStats(db, userId)
 

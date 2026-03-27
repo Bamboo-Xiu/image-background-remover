@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getToken } from 'next-auth/jwt'
+import { auth } from '@/auth'
 import { getRequestContext } from '@cloudflare/next-on-pages'
 import { hasAvailableQuota, consumeQuota } from '@/lib/quota'
 import { createProcessHistory } from '@/lib/db-utils'
@@ -9,14 +9,14 @@ export const runtime = 'edge'
 export async function POST(req: NextRequest) {
   try {
     // 验证用户登录状态
-    const token = await getToken({ req })
-    if (!token) {
+    const session = await auth()
+    if (!session?.user?.id) {
       return NextResponse.json({ error: '请先登录后再使用此功能', code: 'UNAUTHORIZED' }, { status: 401 })
     }
 
     const { env } = getRequestContext()
     const db = env.DB
-    const userId = token.sub as string
+    const userId = session.user.id
 
     // 检查配额
     const hasQuota = await hasAvailableQuota(db, userId)
