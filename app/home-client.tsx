@@ -12,7 +12,7 @@ const MAX_SIZE = 10 * 1024 * 1024
 const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp']
 
 function HomeContent() {
-  const { data: session } = useSession()
+  const { data: session, status: sessionStatus } = useSession()
   const [statusState, setStatusState] = useState<Status>('idle')
   const [originalFile, setOriginalFile] = useState<File | null>(null)
   const [originalUrl, setOriginalUrl] = useState<string>('')
@@ -74,8 +74,12 @@ function HomeContent() {
   }, [])
 
   const handleFile = useCallback((file: File) => {
-    // 检查登录状态
-    if (!session) {
+    // 检查登录状态：loading 时不做操作，等 session 加载完再处理
+    if (sessionStatus === 'loading') {
+      showToast('info', '正在加载登录状态，请稍候...')
+      return
+    }
+    if (sessionStatus === 'unauthenticated' || !session?.user) {
       showToast('error', '请先登录后再使用背景去除功能')
       setTimeout(() => signIn('google'), 1500)
       return
@@ -93,7 +97,7 @@ function HomeContent() {
     setResultUrl('')
     setErrorMsg('')
     removeBg(file)
-  }, [removeBg, session])
+  }, [removeBg, session, sessionStatus])
 
   const onDrop = useCallback((e: DragEvent<HTMLLabelElement>) => {
     e.preventDefault()
