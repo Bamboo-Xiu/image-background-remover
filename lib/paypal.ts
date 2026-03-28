@@ -13,7 +13,7 @@ function getConfig(): PayPalConfig {
   return {
     clientId: env.PAYPAL_CLIENT_ID,
     clientSecret: env.PAYPAL_CLIENT_SECRET,
-    baseUrl: env.PAYPAL_BASE_URL || 'https://api-m.sandbox.paypal.cn',
+    baseUrl: env.PAYPAL_BASE_URL || 'https://api-m.sandbox.paypal.com',
   }
 }
 
