@@ -66,7 +66,7 @@ export async function createTransaction(
   type: 'subscription' | 'pay_per_use' | 'admin_grant',
   amount: number,
   quotaAdded: number,
-  paymentMethod?: 'alipay' | 'wechat' | 'stripe' | 'admin',
+  paymentMethod?: 'alipay' | 'wechat' | 'stripe' | 'paypal' | 'admin',
   paymentId?: string,
   adminNote?: string
 ): Promise<string> {

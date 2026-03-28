@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { SessionProvider, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { SUBSCRIPTION_PLANS, PAY_PER_USE_OPTIONS } from '@/lib/pricing'
+import { SUBSCRIPTION_PLANS, PAY_PER_USE_OPTIONS, type SubscriptionTier, type PayPerUseOption } from '@/lib/pricing'
 
 interface QuotaStatus {
   remaining: number
@@ -19,6 +19,8 @@ function PricingContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [quota, setQuota] = useState<QuotaStatus | null>(null)
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -33,13 +35,75 @@ function PricingContent() {
     }
   }, [status])
 
+  const handleSubscribe = async (planKey: SubscriptionTier) => {
+    if (status !== 'authenticated') {
+      router.push('/')
+      return
+    }
+
+    setLoadingPlan(`sub-${planKey}`)
+    setError(null)
+
+    try {
+      const res = await fetch('/api/paypal/create-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planKey }),
+      })
+
+      const data = await res.json() as { subscriptionId?: string; approveUrl?: string; error?: string }
+
+      if (!res.ok || !data.approveUrl) {
+        setError(data.error || '创建订阅失败')
+        return
+      }
+
+      window.location.href = data.approveUrl
+    } catch (e) {
+      setError('网络错误，请稍后重试')
+    } finally {
+      setLoadingPlan(null)
+    }
+  }
+
+  const handleBuy = async (planKey: PayPerUseOption) => {
+    if (status !== 'authenticated') {
+      router.push('/')
+      return
+    }
+
+    setLoadingPlan(`buy-${planKey}`)
+    setError(null)
+
+    try {
+      const res = await fetch('/api/paypal/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planKey }),
+      })
+
+      const data = await res.json() as { orderId?: string; approveUrl?: string; error?: string }
+
+      if (!res.ok || !data.approveUrl) {
+        setError(data.error || '创建订单失败')
+        return
+      }
+
+      window.location.href = data.approveUrl
+    } catch (e) {
+      setError('网络错误，请稍后重试')
+    } finally {
+      setLoadingPlan(null)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 py-4 px-6">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 text-blue-500 hover:text-blue-600">
-            <span className="text-xl">✂️</span>
+            <span className="text-xl">&#9986;&#65039;</span>
             <span className="font-medium">Background Remover</span>
           </Link>
           <div className="flex items-center gap-4">
@@ -72,6 +136,13 @@ function PricingContent() {
           )}
         </div>
 
+        {/* 错误提示 */}
+        {error && (
+          <div className="max-w-2xl mx-auto mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center">
+            {error}
+          </div>
+        )}
+
         {/* 订阅套餐 */}
         <div className="mb-16">
           <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">月度订阅</h2>
@@ -90,25 +161,36 @@ function PricingContent() {
                 )}
                 <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
                 <div className="mt-4 mb-6">
-                  <span className="text-4xl font-bold text-gray-900">¥{plan.priceYuan}</span>
+                  <span className="text-4xl font-bold text-gray-900">${plan.priceUSD}</span>
                   <span className="text-gray-500">/月</span>
                 </div>
                 <p className="text-2xl font-semibold text-blue-600 mb-4">
                   {plan.quota} 次
                   <span className="text-sm text-gray-500 font-normal ml-2">
-                    (¥{plan.unitPrice}/次)
+                    (${plan.unitPriceUSD}/次)
                   </span>
                 </p>
                 <ul className="space-y-3 mb-6">
                   {plan.features.map((feature, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-gray-600">
-                      <span className="text-green-500">✓</span>
+                      <span className="text-green-500">&#10003;</span>
                       {feature}
                     </li>
                   ))}
                 </ul>
-                <button className="w-full py-3 rounded-xl font-medium transition-colors bg-blue-500 text-white hover:bg-blue-600">
-                  联系客服购买
+                <button
+                  onClick={() => handleSubscribe(key as SubscriptionTier)}
+                  disabled={loadingPlan === `sub-${key}`}
+                  className="w-full py-3 rounded-xl font-medium transition-colors bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {loadingPlan === `sub-${key}` ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      处理中...
+                    </>
+                  ) : (
+                    'Subscribe Now'
+                  )}
                 </button>
               </div>
             ))}
@@ -127,13 +209,24 @@ function PricingContent() {
               >
                 <h3 className="text-lg font-bold text-gray-900">{option.name}</h3>
                 <div className="mt-4 mb-4">
-                  <span className="text-3xl font-bold text-gray-900">¥{option.priceYuan}</span>
+                  <span className="text-3xl font-bold text-gray-900">${option.priceUSD}</span>
                 </div>
                 <p className="text-sm text-gray-500">
-                  ¥{option.unitPrice}/次
+                  ${option.unitPriceUSD}/次
                 </p>
-                <button className="w-full mt-4 py-2 rounded-lg font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200">
-                  联系客服
+                <button
+                  onClick={() => handleBuy(key as PayPerUseOption)}
+                  disabled={loadingPlan === `buy-${key}`}
+                  className="w-full mt-4 py-2 rounded-lg font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {loadingPlan === `buy-${key}` ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-gray-500 border-t-transparent rounded-full animate-spin" />
+                      处理中...
+                    </>
+                  ) : (
+                    'Buy Now'
+                  )}
                 </button>
               </div>
             ))}
@@ -156,19 +249,19 @@ function PricingContent() {
               <tbody className="divide-y divide-gray-100">
                 <tr>
                   <td className="py-3 px-4 font-medium">Remove.bg</td>
-                  <td className="py-3 px-4">~¥1.4</td>
+                  <td className="py-3 px-4">~$0.20</td>
                   <td className="py-3 px-4">有</td>
-                  <td className="py-3 px-4 text-green-600">便宜 3-5 倍</td>
+                  <td className="py-3 px-4 text-green-600">便宜 2-5 倍</td>
                 </tr>
                 <tr>
-                  <td className="py-3 px-4 font-medium">美图秀秀</td>
-                  <td className="py-3 px-4">¥0.5-1</td>
-                  <td className="py-3 px-4">有</td>
-                  <td className="py-3 px-4 text-green-600">价格相当，体验更好</td>
+                  <td className="py-3 px-4 font-medium">Canva Pro</td>
+                  <td className="py-3 px-4">$12.99/月</td>
+                  <td className="py-3 px-4">-</td>
+                  <td className="py-3 px-4 text-green-600">更便宜更专注</td>
                 </tr>
                 <tr>
                   <td className="py-3 px-4 font-medium text-blue-600">我们</td>
-                  <td className="py-3 px-4 text-blue-600 font-semibold">¥0.20-0.50</td>
+                  <td className="py-3 px-4 text-blue-600 font-semibold">$0.04-0.15</td>
                   <td className="py-3 px-4 text-blue-600">有</td>
                   <td className="py-3 px-4 text-green-600">性价比最高</td>
                 </tr>

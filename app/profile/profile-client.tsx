@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import { SessionProvider, useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { formatBytes } from '@/lib/db-utils'
 
@@ -42,12 +42,22 @@ interface HistoryItem {
 function ProfileContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [quota, setQuota] = useState<QuotaStatus | null>(null)
   const [stats, setStats] = useState<UserStats | null>(null)
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [loading, setLoading] = useState(true)
   const [historyPage, setHistoryPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false)
+
+  useEffect(() => {
+    if (searchParams.get('payment') === 'success') {
+      setShowPaymentSuccess(true)
+      // 清除 URL 参数
+      router.replace('/profile')
+    }
+  }, [searchParams, router])
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -131,6 +141,25 @@ function ProfileContent() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+        {/* 支付成功提示 */}
+        {showPaymentSuccess && (
+          <div className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-green-500 text-xl">&#9989;</span>
+              <div>
+                <p className="font-medium text-green-800">支付成功！</p>
+                <p className="text-sm text-green-600">您的配额已更新，感谢您的购买。</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowPaymentSuccess(false)}
+              className="text-green-500 hover:text-green-700 text-lg"
+            >
+              &#10005;
+            </button>
+          </div>
+        )}
+
         {/* 用户信息卡片 */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center gap-4">
@@ -300,7 +329,9 @@ function ProfileContent() {
 export function ProfileClient() {
   return (
     <SessionProvider>
-      <ProfileContent />
+      <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" /></div>}>
+        <ProfileContent />
+      </Suspense>
     </SessionProvider>
   )
 }
