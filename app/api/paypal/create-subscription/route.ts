@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     })
 
     // 3. 创建 PayPal Subscription
-    const returnUrl = `${appUrl}/payment/return?subscription_id={subscription_id}&ba_token={ba_token}`
+    const returnUrl = `${appUrl}/payment/return`
     const result = await createSubscription({
       planId: billingPlanId,
       returnUrl,
