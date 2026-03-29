@@ -15,6 +15,14 @@ interface QuotaStatus {
   }
 }
 
+function CheckIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  )
+}
+
 function PricingContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -98,22 +106,29 @@ function PricingContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
+      <div className="ambient-glow" />
+
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 py-4 px-6">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-blue-500 hover:text-blue-600">
-            <span className="text-xl">&#9986;&#65039;</span>
-            <span className="font-medium">Background Remover</span>
+      <header className="sticky top-0 z-40 border-b border-border-subtle bg-bg-secondary/80 backdrop-blur-xl">
+        <div className="max-w-6xl mx-auto flex items-center justify-between h-14 px-5">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-start to-accent-end flex items-center justify-center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="6" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><line x1="20" y1="4" x2="8.12" y2="15.88" />
+                <line x1="14.47" y1="14.48" x2="20" y2="20" /><line x1="8.12" y1="8.12" x2="12" y2="12" />
+              </svg>
+            </div>
+            <span className="font-[family-name:var(--font-sora)] font-semibold text-sm text-foreground">BG Remover</span>
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/faq" className="text-sm text-gray-600 hover:text-gray-900">常见问题</Link>
+            <Link href="/faq" className="text-xs text-text-secondary hover:text-foreground transition-colors">常见问题</Link>
             {session ? (
-              <Link href="/profile" className="text-sm text-blue-500 hover:text-blue-600">个人中心</Link>
+              <Link href="/profile" className="text-xs text-accent-start hover:text-accent-end transition-colors">个人中心</Link>
             ) : (
               <button
                 onClick={() => router.push('/')}
-                className="px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                className="btn-accent text-xs px-4 py-2"
               >
                 登录
               </button>
@@ -122,58 +137,64 @@ function PricingContent() {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-12">
-        {/* 标题 */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">选择适合您的方案</h1>
-          <p className="text-lg text-gray-600">
-            新用户注册即送 <span className="text-blue-600 font-semibold">5 次免费</span> 处理额度
+      <main className="max-w-6xl mx-auto px-5 py-16 relative z-10">
+        {/* Title */}
+        <div className="text-center mb-14 animate-fade-in-up">
+          <h1 className="font-[family-name:var(--font-sora)] text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+            选择适合您的方案
+          </h1>
+          <p className="text-text-secondary text-base">
+            新用户注册即送 <span className="gradient-text font-semibold">5 次免费</span> 处理额度
           </p>
           {quota && quota.remaining > 0 && (
-            <p className="mt-2 text-sm text-green-600">
-              您当前剩余 <span className="font-semibold">{quota.remaining}</span> 次处理额度
+            <p className="mt-3 text-sm text-success">
+              当前剩余 <span className="font-semibold">{quota.remaining}</span> 次处理额度
             </p>
           )}
         </div>
 
-        {/* 错误提示 */}
+        {/* Error */}
         {error && (
-          <div className="max-w-2xl mx-auto mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center">
+          <div className="max-w-2xl mx-auto mb-8 p-4 toast toast-error text-center animate-fade-in">
             {error}
           </div>
         )}
 
-        {/* 订阅套餐 */}
-        <div className="mb-16">
-          <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">月度订阅</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {Object.entries(SUBSCRIPTION_PLANS).map(([key, plan]) => (
+        {/* Subscription Plans */}
+        <div className="mb-20">
+          <h2 className="font-[family-name:var(--font-sora)] text-xl font-bold text-center mb-8 text-foreground">
+            月度订阅
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl mx-auto">
+            {Object.entries(SUBSCRIPTION_PLANS).map(([key, plan], index) => (
               <div
                 key={key}
-                className={`bg-white rounded-2xl p-6 border-2 ${
-                  key === 'standard' ? 'border-blue-500 shadow-lg relative' : 'border-gray-200'
+                className={`rounded-2xl p-7 transition-all duration-300 animate-fade-in-up stagger-${index + 1} ${
+                  key === 'standard'
+                    ? 'gradient-border featured ring-1 ring-accent-start/20'
+                    : 'bg-bg-card border border-border-subtle hover:border-border-default'
                 }`}
               >
                 {key === 'standard' && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-full">
-                    最受欢迎
+                  <div className="inline-block px-3 py-1 bg-accent-start/10 text-accent-start text-[11px] font-semibold rounded-full mb-4 font-[family-name:var(--font-sora)] uppercase tracking-wider">
+                    Popular
                   </div>
                 )}
-                <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
-                <div className="mt-4 mb-6">
-                  <span className="text-4xl font-bold text-gray-900">${plan.priceUSD}</span>
-                  <span className="text-gray-500">/月</span>
+                <h3 className="font-[family-name:var(--font-sora)] text-lg font-bold text-foreground">{plan.name}</h3>
+                <div className="mt-5 mb-3">
+                  <span className="font-[family-name:var(--font-sora)] text-4xl font-bold text-foreground">${plan.priceUSD}</span>
+                  <span className="text-text-muted text-sm ml-1">/月</span>
                 </div>
-                <p className="text-2xl font-semibold text-blue-600 mb-4">
+                <p className="font-[family-name:var(--font-sora)] text-xl font-semibold gradient-text mb-6">
                   {plan.quota} 次
-                  <span className="text-sm text-gray-500 font-normal ml-2">
-                    (${plan.unitPriceUSD}/次)
+                  <span className="text-xs text-text-muted font-normal ml-2">
+                    ${plan.unitPriceUSD}/次
                   </span>
                 </p>
-                <ul className="space-y-3 mb-6">
+                <ul className="space-y-3 mb-7">
                   {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-gray-600">
-                      <span className="text-green-500">&#10003;</span>
+                    <li key={i} className="flex items-center gap-2.5 text-sm text-text-secondary">
+                      <span className="text-success flex-shrink-0"><CheckIcon /></span>
                       {feature}
                     </li>
                   ))}
@@ -181,11 +202,15 @@ function PricingContent() {
                 <button
                   onClick={() => handleSubscribe(key as SubscriptionTier)}
                   disabled={loadingPlan === `sub-${key}`}
-                  className="w-full py-3 rounded-xl font-medium transition-colors bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className={`w-full py-3 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
+                    key === 'standard'
+                      ? 'btn-accent'
+                      : 'bg-bg-hover text-foreground border border-border-default hover:bg-bg-elevated hover:border-border-strong'
+                  }`}
                 >
                   {loadingPlan === `sub-${key}` ? (
                     <>
-                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span className="spinner w-4 h-4 !border-2" />
                       处理中...
                     </>
                   ) : (
@@ -197,31 +222,33 @@ function PricingContent() {
           </div>
         </div>
 
-        {/* 按次购买 */}
-        <div className="mb-16">
-          <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">按次购买</h2>
-          <p className="text-center text-gray-500 mb-6">永不过期，用完再买</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {Object.entries(PAY_PER_USE_OPTIONS).map(([key, option]) => (
+        {/* Pay Per Use */}
+        <div className="mb-20">
+          <div className="text-center mb-8">
+            <h2 className="font-[family-name:var(--font-sora)] text-xl font-bold text-foreground">按次购买</h2>
+            <p className="text-text-muted text-sm mt-2">永不过期，用完再买</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-3xl mx-auto">
+            {Object.entries(PAY_PER_USE_OPTIONS).map(([key, option], index) => (
               <div
                 key={key}
-                className="bg-white rounded-2xl p-6 border border-gray-200 text-center"
+                className={`bg-bg-card rounded-2xl p-6 border border-border-subtle text-center hover:border-border-default transition-all animate-fade-in-up stagger-${index + 1}`}
               >
-                <h3 className="text-lg font-bold text-gray-900">{option.name}</h3>
-                <div className="mt-4 mb-4">
-                  <span className="text-3xl font-bold text-gray-900">${option.priceUSD}</span>
+                <h3 className="font-[family-name:var(--font-sora)] font-bold text-foreground">{option.name}</h3>
+                <div className="mt-4 mb-3">
+                  <span className="font-[family-name:var(--font-sora)] text-3xl font-bold text-foreground">${option.priceUSD}</span>
                 </div>
-                <p className="text-sm text-gray-500">
+                <p className="text-xs text-text-muted mb-5">
                   ${option.unitPriceUSD}/次
                 </p>
                 <button
                   onClick={() => handleBuy(key as PayPerUseOption)}
                   disabled={loadingPlan === `buy-${key}`}
-                  className="w-full mt-4 py-2 rounded-lg font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full py-2.5 rounded-xl font-medium text-sm bg-bg-hover text-foreground border border-border-default hover:bg-bg-elevated hover:border-border-strong transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {loadingPlan === `buy-${key}` ? (
                     <>
-                      <span className="w-4 h-4 border-2 border-gray-500 border-t-transparent rounded-full animate-spin" />
+                      <span className="spinner w-4 h-4 !border-2" />
                       处理中...
                     </>
                   ) : (
@@ -233,47 +260,47 @@ function PricingContent() {
           </div>
         </div>
 
-        {/* 对比表格 */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">与其他产品对比</h2>
+        {/* Comparison Table */}
+        <div className="glass-card p-8 max-w-3xl mx-auto animate-fade-in-up">
+          <h2 className="font-[family-name:var(--font-sora)] text-lg font-bold text-foreground mb-6">与其他产品对比</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">产品</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">单次价格</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">订阅优惠</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">我们的优势</th>
+                <tr className="border-b border-border-default">
+                  <th className="text-left py-3 px-4 font-medium text-text-muted text-xs uppercase tracking-wider">产品</th>
+                  <th className="text-left py-3 px-4 font-medium text-text-muted text-xs uppercase tracking-wider">单次价格</th>
+                  <th className="text-left py-3 px-4 font-medium text-text-muted text-xs uppercase tracking-wider">订阅优惠</th>
+                  <th className="text-left py-3 px-4 font-medium text-text-muted text-xs uppercase tracking-wider">优势</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
-                <tr>
-                  <td className="py-3 px-4 font-medium">Remove.bg</td>
-                  <td className="py-3 px-4">~$0.20</td>
-                  <td className="py-3 px-4">有</td>
-                  <td className="py-3 px-4 text-green-600">便宜 2-5 倍</td>
+              <tbody className="divide-y divide-border-subtle">
+                <tr className="hover:bg-bg-hover/50 transition-colors">
+                  <td className="py-3.5 px-4 font-medium text-foreground">Remove.bg</td>
+                  <td className="py-3.5 px-4 text-text-secondary">~$0.20</td>
+                  <td className="py-3.5 px-4 text-text-secondary">有</td>
+                  <td className="py-3.5 px-4 text-success">便宜 2-5 倍</td>
                 </tr>
-                <tr>
-                  <td className="py-3 px-4 font-medium">Canva Pro</td>
-                  <td className="py-3 px-4">$12.99/月</td>
-                  <td className="py-3 px-4">-</td>
-                  <td className="py-3 px-4 text-green-600">更便宜更专注</td>
+                <tr className="hover:bg-bg-hover/50 transition-colors">
+                  <td className="py-3.5 px-4 font-medium text-foreground">Canva Pro</td>
+                  <td className="py-3.5 px-4 text-text-secondary">$12.99/月</td>
+                  <td className="py-3.5 px-4 text-text-secondary">-</td>
+                  <td className="py-3.5 px-4 text-success">更便宜更专注</td>
                 </tr>
-                <tr>
-                  <td className="py-3 px-4 font-medium text-blue-600">我们</td>
-                  <td className="py-3 px-4 text-blue-600 font-semibold">$0.04-0.15</td>
-                  <td className="py-3 px-4 text-blue-600">有</td>
-                  <td className="py-3 px-4 text-green-600">性价比最高</td>
+                <tr className="hover:bg-bg-hover/50 transition-colors">
+                  <td className="py-3.5 px-4 font-bold gradient-text">我们</td>
+                  <td className="py-3.5 px-4 gradient-text font-semibold">$0.04-0.15</td>
+                  <td className="py-3.5 px-4 text-accent-start">有</td>
+                  <td className="py-3.5 px-4 text-success">性价比最高</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        {/* FAQ 链接 */}
-        <div className="text-center mt-12">
-          <p className="text-gray-500">
-            还有疑问？查看 <Link href="/faq" className="text-blue-500 hover:underline">常见问题</Link>
+        {/* FAQ Link */}
+        <div className="text-center mt-12 animate-fade-in-up">
+          <p className="text-text-muted text-sm">
+            还有疑问？查看 <Link href="/faq" className="text-accent-start hover:underline">常见问题</Link>
           </p>
         </div>
       </main>

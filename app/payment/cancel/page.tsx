@@ -2,21 +2,27 @@ import Link from 'next/link'
 
 export default function PaymentCancelPage() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="max-w-md w-full bg-white rounded-2xl p-8 shadow-sm border border-gray-200 text-center">
-        <div className="text-5xl mb-4">&#128683;</div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">支付已取消</h1>
-        <p className="text-gray-600 mb-6">您取消了本次支付，未产生任何费用。</p>
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="ambient-glow" />
+      <div className="max-w-md w-full glass-card p-10 text-center relative z-10 animate-fade-in-up">
+        <div className="w-16 h-16 rounded-2xl bg-warning/10 flex items-center justify-center mx-auto mb-5">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+          </svg>
+        </div>
+        <h1 className="font-[family-name:var(--font-sora)] text-2xl font-bold text-foreground mb-2">支付已取消</h1>
+        <p className="text-text-secondary text-sm mb-8">您取消了本次支付，未产生任何费用。</p>
         <div className="flex gap-3 justify-center">
           <Link
             href="/pricing"
-            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            className="btn-accent text-sm"
           >
             返回定价页面
           </Link>
           <Link
             href="/"
-            className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+            className="btn-ghost text-sm"
           >
             首页
           </Link>

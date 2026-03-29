@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: '常见问题 - Background Remover',
@@ -50,46 +51,57 @@ const faqs = [
 
 export default function FAQPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
+      <div className="ambient-glow" />
+
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 py-4 px-6">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2 text-blue-500 hover:text-blue-600">
-            <span className="text-xl">✂️</span>
-            <span className="font-medium">Background Remover</span>
-          </a>
+      <header className="sticky top-0 z-40 border-b border-border-subtle bg-bg-secondary/80 backdrop-blur-xl">
+        <div className="max-w-3xl mx-auto flex items-center justify-between h-14 px-5">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-start to-accent-end flex items-center justify-center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="6" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><line x1="20" y1="4" x2="8.12" y2="15.88" />
+                <line x1="14.47" y1="14.48" x2="20" y2="20" /><line x1="8.12" y1="8.12" x2="12" y2="12" />
+              </svg>
+            </div>
+            <span className="font-[family-name:var(--font-sora)] font-semibold text-sm text-foreground">BG Remover</span>
+          </Link>
           <div className="flex items-center gap-4">
-            <a href="/pricing" className="text-sm text-gray-600 hover:text-gray-900">定价</a>
+            <Link href="/pricing" className="text-xs text-text-secondary hover:text-foreground transition-colors">定价</Link>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-gray-900 text-center mb-12">常见问题</h1>
+      <main className="max-w-3xl mx-auto px-5 py-14 relative z-10">
+        <div className="text-center mb-12 animate-fade-in-up">
+          <h1 className="font-[family-name:var(--font-sora)] text-3xl font-bold tracking-tight mb-3">常见问题</h1>
+          <p className="text-text-secondary text-sm">快速找到您需要的答案</p>
+        </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {faqs.map((faq, index) => (
-            <div key={index} className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {index + 1}. {faq.question}
-              </h3>
-              <p className="text-gray-600 leading-relaxed">{faq.answer}</p>
-            </div>
+            <details
+              key={index}
+              className={`faq-item animate-fade-in-up stagger-${Math.min(index + 1, 5)}`}
+            >
+              <summary>
+                <span>{faq.question}</span>
+              </summary>
+              <div className="faq-answer">{faq.answer}</div>
+            </details>
           ))}
         </div>
 
-        {/* 联系方式 */}
-        <div className="mt-12 bg-blue-50 rounded-2xl p-8 text-center">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">还有其他问题？</h2>
-          <p className="text-gray-600 mb-4">请联系客服，我们会尽快回复您</p>
-          <div className="flex justify-center gap-4">
-            <a
-              href="mailto:support@example.com"
-              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              发送邮件
-            </a>
-          </div>
+        {/* Contact */}
+        <div className="mt-14 glass-card p-8 text-center animate-fade-in-up">
+          <h2 className="font-[family-name:var(--font-sora)] text-lg font-bold text-foreground mb-3">还有其他问题？</h2>
+          <p className="text-text-secondary text-sm mb-6">请联系客服，我们会尽快回复您</p>
+          <a
+            href="mailto:support@example.com"
+            className="btn-accent text-sm"
+          >
+            发送邮件
+          </a>
         </div>
       </main>
     </div>

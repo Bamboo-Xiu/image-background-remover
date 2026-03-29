@@ -33,7 +33,6 @@ function PaymentReturnContent() {
     const subscriptionId = searchParams.get('subscription_id') || searchParams.get('ba_token')
 
     if (subscriptionId) {
-      // 订阅回调
       try {
         const res = await fetch('/api/paypal/activate-subscription', {
           method: 'POST',
@@ -63,7 +62,6 @@ function PaymentReturnContent() {
         setProcessing(false)
       }
     } else if (token) {
-      // 一次性支付回调
       try {
         const res = await fetch('/api/paypal/capture-order', {
           method: 'POST',
@@ -99,11 +97,12 @@ function PaymentReturnContent() {
 
   if (status === 'loading' || processing) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <h1 className="text-xl font-semibold text-gray-900">正在处理支付结果...</h1>
-          <p className="text-gray-500 mt-2">请稍候</p>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="ambient-glow" />
+        <div className="text-center relative z-10 animate-fade-in">
+          <div className="spinner mx-auto mb-5" />
+          <h1 className="font-[family-name:var(--font-sora)] text-lg font-semibold text-foreground">正在处理支付结果...</h1>
+          <p className="text-text-muted text-sm mt-2">请稍候</p>
         </div>
       </div>
     )
@@ -111,19 +110,24 @@ function PaymentReturnContent() {
 
   if (result?.success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="max-w-md w-full bg-white rounded-2xl p-8 shadow-sm border border-gray-200 text-center">
-          <div className="text-5xl mb-4">&#9989;</div>
-          <h1 className="text-2xl font-bold text-green-600 mb-2">支付成功！</h1>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="ambient-glow" />
+        <div className="max-w-md w-full glass-card p-10 text-center relative z-10 animate-fade-in-up">
+          <div className="w-16 h-16 rounded-2xl bg-success/10 flex items-center justify-center mx-auto mb-5">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <h1 className="font-[family-name:var(--font-sora)] text-2xl font-bold text-success mb-3">支付成功！</h1>
           {result.quota && (
-            <p className="text-gray-600 mb-2">
-              已获得 <span className="font-semibold text-blue-600">{result.quota}</span> 次处理额度
+            <p className="text-text-secondary mb-2">
+              已获得 <span className="font-semibold gradient-text">{result.quota}</span> 次处理额度
             </p>
           )}
           {result.planName && (
-            <p className="text-gray-500 text-sm mb-4">{result.planName}</p>
+            <p className="text-text-muted text-sm mb-4">{result.planName}</p>
           )}
-          <p className="text-sm text-gray-400">正在跳转到个人中心...</p>
+          <p className="text-xs text-text-muted">正在跳转到个人中心...</p>
         </div>
       </div>
     )
@@ -131,21 +135,26 @@ function PaymentReturnContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="max-w-md w-full bg-white rounded-2xl p-8 shadow-sm border border-gray-200 text-center">
-          <div className="text-5xl mb-4">&#9888;&#65039;</div>
-          <h1 className="text-2xl font-bold text-red-600 mb-2">支付处理异常</h1>
-          <p className="text-gray-600 mb-6">{error}</p>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="ambient-glow" />
+        <div className="max-w-md w-full glass-card p-10 text-center relative z-10 animate-fade-in-up">
+          <div className="w-16 h-16 rounded-2xl bg-error/10 flex items-center justify-center mx-auto mb-5">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--error)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+          </div>
+          <h1 className="font-[family-name:var(--font-sora)] text-2xl font-bold text-error mb-3">支付处理异常</h1>
+          <p className="text-text-secondary text-sm mb-7">{error}</p>
           <div className="flex gap-3 justify-center">
             <Link
               href="/pricing"
-              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              className="btn-accent text-sm"
             >
               返回定价页面
             </Link>
             <Link
               href="/profile"
-              className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              className="btn-ghost text-sm"
             >
               个人中心
             </Link>
@@ -161,7 +170,7 @@ function PaymentReturnContent() {
 export default function PaymentReturnPage() {
   return (
     <SessionProvider>
-      <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" /></div>}>
+      <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="spinner" /></div>}>
         <PaymentReturnContent />
       </Suspense>
     </SessionProvider>
